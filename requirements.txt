@@ -1,0 +1,13 @@
+# Linux Quest Game - Bağımlılıklar
+# ================================
+# Ana oyun için bağımlılık YOK - sadece Python standart kütüphanesi kullanılır.
+# Aşağıdakiler sadece geliştirme/test içindir.
+
+# Test (opsiyonel)
+pytest>=7.0.0
+
+# Ses desteği (opsiyonel - pygame kuruluysa daha iyi ses)
+# pygame>=2.5.0
+
+# Not: Oyunu çalıştırmak için hiçbir bağımlılık kurmanıza gerek yok!
+# Sadece: ./play.sh veya python3 -m src.main
