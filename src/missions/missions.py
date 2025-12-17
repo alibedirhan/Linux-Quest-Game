@@ -670,6 +670,349 @@ class MissionLoader:
                 ),
             ],
             completion_message="🎯 BÖLÜM 3 TAMAMLANDI!\n\nÖğrendiklerin:\n• Gizli dosyalar (. ile başlar)\n• echo ve yönlendirme (>)\n• find - Güçlü dosya arama\n\n🏆 HACKER EĞİTİMİ TAMAMLANDI!",
+            unlocks=["sysadmin_intro"],
+        )
+        
+        # === SYSADMIN EĞİTİMİ SERİSİ ===
+        
+        # SysAdmin 1: Kullanıcı ve Sistem Bilgisi
+        self._missions["sysadmin_intro"] = Mission(
+            id="sysadmin_intro",
+            name="🔧 SysAdmin 101: Kullanıcı Yönetimi",
+            description="Sistem yöneticisi olmak için kullanıcı ve yetki kavramlarını öğren!",
+            difficulty=Difficulty.MEDIUM,
+            category="sysadmin",
+            estimated_time="12 dakika",
+            prerequisites=["hacker_hunt"],
+            tasks=[
+                Task(
+                    id="id_cmd",
+                    description="Kullanıcı kimlik bilgilerini görüntüle",
+                    hint="'id' komutu UID, GID ve grupları gösterir",
+                    accepted_commands=["id"],
+                    success_message="✓ UID=User ID, GID=Group ID. Yetkiler bunlara bağlı!",
+                ),
+                Task(
+                    id="groups_cmd",
+                    description="Hangi gruplara üye olduğunu gör",
+                    hint="'groups' komutunu kullan",
+                    accepted_commands=["groups"],
+                    success_message="✓ sudo grubu = root yetkileri alabilirsin!",
+                ),
+                Task(
+                    id="sudo_list",
+                    description="sudo yetkilerini kontrol et",
+                    hint="'sudo -l' izinleri listeler",
+                    accepted_commands=["sudo -l"],
+                    success_message="✓ (ALL : ALL) ALL = Her şeyi yapabilirsin!",
+                    points=15,
+                ),
+                Task(
+                    id="whoami_sudo",
+                    description="sudo ile root olarak whoami çalıştır",
+                    hint="'sudo whoami' kullan",
+                    accepted_commands=["sudo whoami"],
+                    success_message="✓ root! sudo geçici olarak yetkini yükseltti.",
+                ),
+                Task(
+                    id="passwd_cmd",
+                    description="Şifre değiştirme komutunu dene (simülasyon)",
+                    hint="'passwd' kullan",
+                    accepted_commands=["passwd"],
+                    success_message="✓ Gerçek sistemde güçlü şifre kullan!",
+                    points=15,
+                ),
+                Task(
+                    id="useradd_cmd",
+                    description="Yeni kullanıcı eklemeyi dene: 'sudo useradd -m testuser'",
+                    hint="'sudo useradd -m testuser' (-m = ev dizini oluştur)",
+                    accepted_commands=["sudo useradd -m testuser", "sudo useradd testuser"],
+                    success_message="✓ Kullanıcı oluşturuldu! -m ev dizini de oluşturur.",
+                    points=20,
+                ),
+            ],
+            completion_message="🔧 SYSADMIN 101 TAMAMLANDI!\n\nÖğrendiklerin:\n• id, groups - Kimlik bilgileri\n• sudo - Yetki yükseltme\n• passwd - Şifre yönetimi\n• useradd - Kullanıcı oluşturma",
+            unlocks=["sysadmin_process"],
+        )
+        
+        # SysAdmin 2: Süreç ve Servis Yönetimi
+        self._missions["sysadmin_process"] = Mission(
+            id="sysadmin_process",
+            name="⚙️ SysAdmin 102: Süreç Yönetimi",
+            description="Çalışan programları ve servisleri yönetmeyi öğren!",
+            difficulty=Difficulty.MEDIUM,
+            category="sysadmin",
+            estimated_time="12 dakika",
+            prerequisites=["sysadmin_intro"],
+            tasks=[
+                Task(
+                    id="ps_simple",
+                    description="Kendi işlemlerini listele",
+                    hint="'ps' komutunu kullan",
+                    accepted_commands=["ps"],
+                    success_message="✓ Bu senin terminaldeki işlemler.",
+                ),
+                Task(
+                    id="ps_all",
+                    description="Tüm sistem işlemlerini göster",
+                    hint="'ps aux' tüm işlemleri detaylı gösterir",
+                    accepted_commands=["ps aux", "ps -ef", "ps -e"],
+                    success_message="✓ USER, PID, CPU, MEM... Tüm bilgiler burada!",
+                    points=15,
+                ),
+                Task(
+                    id="top_cmd",
+                    description="Canlı sistem monitörünü aç",
+                    hint="'top' komutunu kullan",
+                    accepted_commands=["top", "htop"],
+                    success_message="✓ top = Task Manager'ın Linux versiyonu!",
+                ),
+                Task(
+                    id="service_status",
+                    description="SSH servisinin durumunu kontrol et",
+                    hint="'service ssh status' veya 'systemctl status ssh'",
+                    accepted_commands=["service ssh status", "service sshd status", "systemctl status ssh", "systemctl status sshd"],
+                    success_message="✓ active (running) = Servis çalışıyor!",
+                    points=15,
+                ),
+                Task(
+                    id="kill_process",
+                    description="PID 1234 olan işlemi sonlandır (simülasyon)",
+                    hint="'kill 1234' kullan",
+                    accepted_commands=["kill 1234", "kill -9 1234", "kill -15 1234"],
+                    success_message="✓ kill -9 zorla sonlandırır, -15 nazikçe sorar.",
+                    points=15,
+                ),
+                Task(
+                    id="uptime_cmd",
+                    description="Sistemin ne kadar süredir açık olduğunu gör",
+                    hint="'uptime' kullan",
+                    accepted_commands=["uptime"],
+                    success_message="✓ load average: Son 1, 5, 15 dakika CPU yükü!",
+                ),
+            ],
+            completion_message="⚙️ SYSADMIN 102 TAMAMLANDI!\n\nÖğrendiklerin:\n• ps - İşlem listesi\n• top - Canlı izleme\n• service/systemctl - Servis yönetimi\n• kill - İşlem sonlandırma\n• uptime - Sistem çalışma süresi",
+            unlocks=["sysadmin_disk"],
+        )
+        
+        # SysAdmin 3: Disk ve Bellek Yönetimi
+        self._missions["sysadmin_disk"] = Mission(
+            id="sysadmin_disk",
+            name="💾 SysAdmin 103: Disk & Bellek",
+            description="Sistem kaynaklarını izlemeyi ve yönetmeyi öğren!",
+            difficulty=Difficulty.HARD,
+            category="sysadmin",
+            estimated_time="10 dakika",
+            prerequisites=["sysadmin_process"],
+            tasks=[
+                Task(
+                    id="df_cmd",
+                    description="Disk kullanımını göster",
+                    hint="'df -h' okunabilir boyutlar gösterir",
+                    accepted_commands=["df", "df -h"],
+                    success_message="✓ -h = human readable (GB, MB cinsinden)",
+                ),
+                Task(
+                    id="du_cmd",
+                    description="Mevcut dizinin boyutunu öğren",
+                    hint="'du -sh .' kullan",
+                    accepted_commands=["du -sh .", "du -sh", "du -hs .", "du -hs"],
+                    success_message="✓ -s=summary, -h=human readable",
+                    points=15,
+                ),
+                Task(
+                    id="free_cmd",
+                    description="Bellek (RAM) kullanımını göster",
+                    hint="'free -h' kullan",
+                    accepted_commands=["free", "free -h", "free -m"],
+                    success_message="✓ buff/cache = Sistem önbelleği (gerekince boşalır)",
+                ),
+                Task(
+                    id="chmod_exec",
+                    description="Bir dosyayı çalıştırılabilir yap: chmod +x script.sh",
+                    hint="Önce 'touch script.sh' sonra 'chmod +x script.sh'",
+                    accepted_commands=["chmod +x script.sh", "chmod 755 script.sh", "chmod 777 script.sh"],
+                    success_message="✓ +x = execute (çalıştırma) izni!",
+                    points=15,
+                ),
+                Task(
+                    id="chown_cmd",
+                    description="script.sh dosyasının sahibini değiştir: chown root script.sh",
+                    hint="'chown root script.sh' kullan (simülasyon)",
+                    accepted_commands=["chown root script.sh", "sudo chown root script.sh"],
+                    success_message="✓ Dosya sahibi değişti! Gerçekte sudo gerekir.",
+                    points=20,
+                ),
+            ],
+            completion_message="💾 SYSADMIN 103 TAMAMLANDI!\n\nÖğrendiklerin:\n• df - Disk alanı\n• du - Dizin boyutu\n• free - Bellek durumu\n• chmod - İzin değiştirme\n• chown - Sahip değiştirme\n\n🏆 SYSADMIN EĞİTİMİ TAMAMLANDI!",
+            unlocks=["network_intro"],
+        )
+        
+        # === NETWORK EĞİTİMİ SERİSİ ===
+        
+        # Network 1: Temel Ağ Komutları
+        self._missions["network_intro"] = Mission(
+            id="network_intro",
+            name="🌐 Network 101: Ağ Temelleri",
+            description="Ağ yapılandırması ve bağlantı testlerini öğren!",
+            difficulty=Difficulty.MEDIUM,
+            category="network",
+            estimated_time="12 dakika",
+            prerequisites=["sysadmin_disk"],
+            tasks=[
+                Task(
+                    id="ifconfig_cmd",
+                    description="Ağ arayüzlerini görüntüle",
+                    hint="'ifconfig' veya 'ip addr' kullan",
+                    accepted_commands=["ifconfig", "ip addr", "ip a"],
+                    success_message="✓ eth0=Ethernet, lo=Loopback (127.0.0.1)",
+                ),
+                Task(
+                    id="ip_addr",
+                    description="IP adresini modern komutla göster",
+                    hint="'ip addr' veya 'ip a' kullan",
+                    accepted_commands=["ip addr", "ip a", "ip address"],
+                    success_message="✓ 'ip' komutu ifconfig'in modern hali!",
+                ),
+                Task(
+                    id="ping_localhost",
+                    description="localhost'a ping at",
+                    hint="'ping -c 4 localhost' (4 paket)",
+                    accepted_commands=["ping localhost", "ping -c 4 localhost", "ping -c 1 localhost", "ping 127.0.0.1"],
+                    success_message="✓ 0% packet loss = Bağlantı sağlıklı!",
+                    points=15,
+                ),
+                Task(
+                    id="ping_google",
+                    description="Google'a ping at (internet testi)",
+                    hint="'ping -c 4 google.com'",
+                    accepted_commands=["ping google.com", "ping -c 4 google.com", "ping -c 1 google.com", "ping 8.8.8.8"],
+                    success_message="✓ İnternet bağlantısı çalışıyor!",
+                    points=15,
+                ),
+                Task(
+                    id="ip_route",
+                    description="Yönlendirme tablosunu göster",
+                    hint="'ip route' kullan",
+                    accepted_commands=["ip route", "ip r", "route"],
+                    success_message="✓ default via = Varsayılan ağ geçidi (router)",
+                ),
+                Task(
+                    id="host_lookup",
+                    description="google.com'un IP adresini bul",
+                    hint="'host google.com' kullan",
+                    accepted_commands=["host google.com", "nslookup google.com", "dig google.com"],
+                    success_message="✓ DNS sorgusu başarılı! Alan adı → IP",
+                    points=15,
+                ),
+            ],
+            completion_message="🌐 NETWORK 101 TAMAMLANDI!\n\nÖğrendiklerin:\n• ifconfig/ip - Ağ yapılandırması\n• ping - Bağlantı testi\n• route - Yönlendirme\n• host/dig - DNS sorguları",
+            unlocks=["network_analysis"],
+        )
+        
+        # Network 2: Ağ Analizi
+        self._missions["network_analysis"] = Mission(
+            id="network_analysis",
+            name="🔍 Network 102: Ağ Analizi",
+            description="Ağ bağlantılarını ve trafiği analiz etmeyi öğren!",
+            difficulty=Difficulty.HARD,
+            category="network",
+            estimated_time="12 dakika",
+            prerequisites=["network_intro"],
+            tasks=[
+                Task(
+                    id="netstat_cmd",
+                    description="Açık ağ bağlantılarını listele",
+                    hint="'netstat -tuln' kullan",
+                    accepted_commands=["netstat", "netstat -tuln", "netstat -an"],
+                    success_message="✓ LISTEN = Port dinleniyor, ESTABLISHED = Bağlı",
+                ),
+                Task(
+                    id="ss_cmd",
+                    description="Modern soket istatistiklerini göster",
+                    hint="'ss -tuln' kullan (netstat alternatifi)",
+                    accepted_commands=["ss", "ss -tuln", "ss -an"],
+                    success_message="✓ ss = Socket Statistics, netstat'tan daha hızlı!",
+                    points=15,
+                ),
+                Task(
+                    id="traceroute_cmd",
+                    description="google.com'a giden yolu izle",
+                    hint="'traceroute google.com' kullan",
+                    accepted_commands=["traceroute google.com", "tracepath google.com"],
+                    success_message="✓ Her satır bir router (yönlendirici)!",
+                    points=15,
+                ),
+                Task(
+                    id="dig_detailed",
+                    description="Detaylı DNS sorgusu yap: dig github.com",
+                    hint="'dig github.com' kullan",
+                    accepted_commands=["dig github.com"],
+                    success_message="✓ ANSWER SECTION'da IP adresi var!",
+                ),
+                Task(
+                    id="nslookup_cmd",
+                    description="nslookup ile DNS sorgula",
+                    hint="'nslookup github.com' kullan",
+                    accepted_commands=["nslookup github.com"],
+                    success_message="✓ Server: 8.8.8.8 = Google DNS kullanılıyor!",
+                    points=15,
+                ),
+            ],
+            completion_message="🔍 NETWORK 102 TAMAMLANDI!\n\nÖğrendiklerin:\n• netstat/ss - Bağlantı analizi\n• traceroute - Yol izleme\n• dig/nslookup - Detaylı DNS",
+            unlocks=["network_transfer"],
+        )
+        
+        # Network 3: Veri Transferi
+        self._missions["network_transfer"] = Mission(
+            id="network_transfer",
+            name="📡 Network 103: Veri Transferi",
+            description="İnternetten veri indirme ve API kullanımını öğren!",
+            difficulty=Difficulty.HARD,
+            category="network",
+            estimated_time="12 dakika",
+            prerequisites=["network_analysis"],
+            tasks=[
+                Task(
+                    id="curl_basic",
+                    description="curl ile bir web sayfası indir",
+                    hint="'curl http://example.com' kullan",
+                    accepted_commands=["curl http://example.com", "curl example.com", "curl https://example.com"],
+                    success_message="✓ HTML içeriği geldi! curl = Client URL",
+                ),
+                Task(
+                    id="curl_head",
+                    description="Sadece HTTP başlıklarını göster",
+                    hint="'curl -I http://example.com' kullan",
+                    accepted_commands=["curl -I http://example.com", "curl -I example.com", "curl --head http://example.com"],
+                    success_message="✓ HTTP 200 OK = Başarılı, 404 = Bulunamadı",
+                    points=15,
+                ),
+                Task(
+                    id="curl_api",
+                    description="GitHub API'sini sorgula",
+                    hint="'curl https://api.github.com' kullan",
+                    accepted_commands=["curl https://api.github.com", "curl api.github.com"],
+                    success_message="✓ JSON yanıt! API'ler böyle çalışır.",
+                    points=15,
+                ),
+                Task(
+                    id="wget_basic",
+                    description="wget ile dosya indir",
+                    hint="'wget http://example.com' kullan",
+                    accepted_commands=["wget http://example.com", "wget example.com", "wget https://example.com"],
+                    success_message="✓ Dosya kaydedildi! wget = Web Get",
+                ),
+                Task(
+                    id="curl_output",
+                    description="curl çıktısını dosyaya kaydet: curl -o page.html http://example.com",
+                    hint="'curl -o page.html http://example.com' kullan",
+                    accepted_commands=["curl -o page.html http://example.com", "curl -o page.html example.com"],
+                    success_message="✓ page.html oluşturuldu! -o = output",
+                    points=20,
+                ),
+            ],
+            completion_message="📡 NETWORK 103 TAMAMLANDI!\n\nÖğrendiklerin:\n• curl - HTTP istekleri\n• wget - Dosya indirme\n• API kullanımı\n\n🏆 TÜM EĞİTİMLER TAMAMLANDI!\nArtık bir Linux uzmanısın!",
             unlocks=[],
         )
     

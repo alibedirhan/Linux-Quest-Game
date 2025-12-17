@@ -35,6 +35,15 @@ class GameState(Enum):
     PROFILE_EDIT = auto()    # F4 - Profil düzenleme
     HELP_VIEW = auto()       # F1 - Akıllı yardım sistemi
     SHORTCUTS_VIEW = auto()  # Kısayollar görüntüleme
+    MODE_SELECT = auto()     # Oyun modu seçimi
+    TIME_ATTACK = auto()     # Zamana karşı modu
+
+
+class GameMode(Enum):
+    """Game modes."""
+    NORMAL = auto()      # Normal mod - süre sınırı yok
+    TIME_ATTACK = auto() # Zamana karşı - her görev için süre
+    SPEEDRUN = auto()    # Speedrun - toplam süre
 
 
 @dataclass
@@ -48,6 +57,8 @@ class GameConfig:
     hints_per_mission: int = 3
     show_boot_animation: bool = True
     profile_name: str = "default"  # Profil adı
+    game_mode: str = "normal"  # normal, time_attack, speedrun
+    time_per_task: int = 60    # Saniye (time_attack için)
 
 
 class Game:
@@ -57,7 +68,7 @@ class Game:
     Manages game state, UI, and coordinates between components.
     """
     
-    VERSION = "3.7.0"
+    VERSION = "4.0.0"
     
     def __init__(self, stdscr, config: GameConfig | None = None):
         self.stdscr = stdscr
@@ -301,6 +312,8 @@ class Game:
             self._handle_help_input(key)
         elif self.state == GameState.SHORTCUTS_VIEW:
             self._handle_shortcuts_input(key)
+        elif self.state == GameState.MODE_SELECT:
+            self._handle_mode_select_input(key)
     
     def _handle_menu_input(self, key):
         """Handle main menu input."""
@@ -328,9 +341,9 @@ class Game:
         
         # Dynamic menu based on save state
         if self._has_save():
-            menu_items = ["Devam Et", "Yeni Oyun", "Görev Seç", "Ayarlar", "Çıkış"]
+            menu_items = ["Devam Et", "Yeni Oyun", "Görev Seç", "Oyun Modu", "Ayarlar", "Çıkış"]
         else:
-            menu_items = ["Yeni Oyun", "Görev Seç", "Ayarlar", "Çıkış"]
+            menu_items = ["Yeni Oyun", "Görev Seç", "Oyun Modu", "Ayarlar", "Çıkış"]
         
         if key == curses.KEY_UP:
             self.menu_selection = (self.menu_selection - 1) % len(menu_items)
@@ -356,6 +369,10 @@ class Game:
             elif selected == "Görev Seç":
                 self.state = GameState.MISSION_SELECT
                 self.mission_selection = 0
+            elif selected == "Oyun Modu":
+                self._previous_state = self.state
+                self.state = GameState.MODE_SELECT
+                self.mode_selection = 0
             elif selected == "Ayarlar":
                 self._previous_state = self.state
                 self.state = GameState.SETTINGS
@@ -1104,6 +1121,8 @@ class Game:
             self._render_help_overlay()  # Overlay help
         elif self.state == GameState.SHORTCUTS_VIEW:
             self._render_shortcuts_view()
+        elif self.state == GameState.MODE_SELECT:
+            self._render_mode_select()
         
         # Single refresh at the end (double buffering)
         self.stdscr.refresh()
@@ -1127,11 +1146,24 @@ class Game:
         except curses.error:
             pass
         
+        # Show current game mode
+        mode_display = {
+            "normal": "🎮 Normal",
+            "time_attack": "⏱️ Zamana Karşı",
+            "speedrun": "🏃 Speedrun"
+        }
+        mode_text = f"Mod: {mode_display.get(self.config.game_mode, 'Normal')}"
+        try:
+            self.stdscr.addstr(6, center_col - len(mode_text) // 2, mode_text,
+                              self.colors.attr(ColorPair.WARNING))
+        except curses.error:
+            pass
+        
         # Dynamic menu items based on save
         if self._has_save():
-            menu_items = ["Devam Et", "Yeni Oyun", "Görev Seç", "Ayarlar", "Çıkış"]
+            menu_items = ["Devam Et", "Yeni Oyun", "Görev Seç", "Oyun Modu", "Ayarlar", "Çıkış"]
         else:
-            menu_items = ["Yeni Oyun", "Görev Seç", "Ayarlar", "Çıkış"]
+            menu_items = ["Yeni Oyun", "Görev Seç", "Oyun Modu", "Ayarlar", "Çıkış"]
         
         menu_start = 8
         
@@ -2540,6 +2572,106 @@ class Game:
             
             # Footer
             hint = "ESC: Kapat"
+            self.stdscr.addstr(start_y + height - 2, start_x + (width - len(hint)) // 2, 
+                              hint, self.colors.attr(ColorPair.INFO))
+            
+        except curses.error:
+            pass
+
+    # === MODE SELECT ===
+    
+    def _handle_mode_select_input(self, key):
+        """Handle game mode selection input."""
+        from .audio import SoundEffect
+        
+        if not hasattr(self, 'mode_selection'):
+            self.mode_selection = 0
+        
+        modes = ["normal", "time_attack", "speedrun"]
+        
+        if key == curses.KEY_UP:
+            self.mode_selection = (self.mode_selection - 1) % len(modes)
+            self._needs_redraw = True
+            self.audio.play(SoundEffect.MENU_MOVE)
+        elif key == curses.KEY_DOWN:
+            self.mode_selection = (self.mode_selection + 1) % len(modes)
+            self._needs_redraw = True
+            self.audio.play(SoundEffect.MENU_MOVE)
+        elif key in (10, curses.KEY_ENTER):
+            self.config.game_mode = modes[self.mode_selection]
+            self.state = self._previous_state
+            self._needs_redraw = True
+            self.audio.play(SoundEffect.MENU_SELECT)
+        elif key == 27:
+            self.state = self._previous_state
+            self._needs_redraw = True
+    
+    def _render_mode_select(self):
+        """Render game mode selection."""
+        from .colors import ColorPair, get_box_chars
+        
+        box = get_box_chars()
+        
+        if not hasattr(self, 'mode_selection'):
+            self.mode_selection = 0
+        
+        # Calculate dimensions
+        width = 55
+        height = 16
+        start_x = (self.cols - width) // 2
+        start_y = (self.rows - height) // 2
+        
+        border_attr = self.colors.attr(ColorPair.BORDER_ACTIVE)
+        
+        try:
+            # Box
+            self.stdscr.addstr(start_y, start_x, box.TL + box.H * (width - 2) + box.TR, border_attr)
+            title = " 🎮 OYUN MODU "
+            self.stdscr.addstr(start_y, start_x + (width - len(title)) // 2, title,
+                              self.colors.attr(ColorPair.TITLE, bold=True))
+            
+            for i in range(1, height - 1):
+                self.stdscr.addstr(start_y + i, start_x, box.V, border_attr)
+                self.stdscr.addstr(start_y + i, start_x + 1, " " * (width - 2), 
+                                  self.colors.attr(ColorPair.DEFAULT))
+                self.stdscr.addstr(start_y + i, start_x + width - 1, box.V, border_attr)
+            
+            self.stdscr.addstr(start_y + height - 1, start_x, 
+                              box.BL + box.H * (width - 2) + box.BR, border_attr)
+            
+            # Mode options
+            modes = [
+                ("🎮 Normal", "normal", "Süre sınırı yok, rahat öğren"),
+                ("⏱️ Zamana Karşı", "time_attack", "Her görev için 60 saniye!"),
+                ("🏃 Speedrun", "speedrun", "Tüm görevleri en hızlı bitir!"),
+            ]
+            
+            y = start_y + 3
+            for i, (name, mode_id, desc) in enumerate(modes):
+                is_selected = (i == self.mode_selection)
+                is_current = (mode_id == self.config.game_mode)
+                
+                if is_selected:
+                    indicator = "▶ "
+                    attr = self.colors.attr(ColorPair.MENU_SELECTED, bold=True)
+                else:
+                    indicator = "  "
+                    attr = self.colors.attr(ColorPair.MENU_NORMAL)
+                
+                # Mode name
+                text = f"{indicator}{name}"
+                if is_current:
+                    text += " ✓"
+                
+                self.stdscr.addstr(y, start_x + 5, text, attr)
+                
+                # Description
+                self.stdscr.addstr(y + 1, start_x + 7, desc, 
+                                  self.colors.attr(ColorPair.INFO, dim=True))
+                y += 3
+            
+            # Footer
+            hint = "↑↓: Seç │ Enter: Onayla │ ESC: İptal"
             self.stdscr.addstr(start_y + height - 2, start_x + (width - len(hint)) // 2, 
                               hint, self.colors.attr(ColorPair.INFO))
             
